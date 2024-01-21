@@ -87,4 +87,4 @@ nombre_tweet = "John Doe"
 usuario_tweet = "johndoe123"
 contenido_tweet = "Hey students! 📚 Twitter rocks for marketing! 🚀\nIt's where brands create buzz. 🐝\nConnects with customers & spreads word fast. 💬📢\nPerfect for promos & updates. 🔥\n#MarketingMagic #BrandBuzz #TwitterPower ✨"
 
-crear_tweet(nombre_tweet, usuario_tweet, contenido_tweet, "tweet_simulado.png")
+crear_tweet(nombre_tweet, usuario_tweet, contenido_tweet, "tweet.png")
