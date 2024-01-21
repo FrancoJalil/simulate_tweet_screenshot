@@ -2,89 +2,76 @@ from PIL import Image, ImageDraw, ImageFont, ImageFilter
 import textwrap
 from cleantext import clean
 
-
 def multiline_text_with_custom_line_height(draw, position, text, font, fill, line_height):
     lines = text.splitlines()
     y = position[1]
 
     for line in lines:
-        
         line = clean(line, no_emoji=True, lower=False, to_ascii=False)
-        wrapped_line = textwrap.fill(line, width=55)  # Ajusta el ancho según sea necesario
-      
+        wrapped_line = textwrap.fill(line, width=55)
         draw.text((position[0], y), wrapped_line, font=font, fill=fill)
         y += line_height
 
-
-
-def crear_tweet(nombre, usuario, contenido, nombre_archivo):
-    # Crear una imagen en blanco con resolución de 1024x1024
+def create_tweet(name, username, content, file_name):
+    # Create a blank image with a resolution of 1024x1024
     img = Image.new('RGB', (1024, 1024), color='#010101')
 
-    # Obtener el objeto ImageDraw
+    # Get the ImageDraw object
     draw = ImageDraw.Draw(img)
 
-    # Fuente para el nombre y el usuario
-    font_nombre_usuario = ImageFont.truetype("arial.ttf", 24)
-    font_contenido = ImageFont.truetype("arial.ttf", 28)
+    # Font for the name and username
+    font_name_username = ImageFont.truetype("arial.ttf", 24)
+    font_content = ImageFont.truetype("arial.ttf", 28)
 
-    rectangulo_size = (800, 400)  # Ancho x Alto
-    rectangulo_pos = ((1024 - rectangulo_size[0]) // 2, (1024 - rectangulo_size[1]) // 2)
+    rectangle_size = (800, 400)  # Width x Height
+    rectangle_pos = ((1024 - rectangle_size[0]) // 2, (1024 - rectangle_size[1]) // 2)
 
-    # Dibujar rectángulo en el centro
+    # Draw a rectangle in the center
     width, height = 300, 200
     rect_coords = [(10, 10), (width - 10, height - 10)]
     border_radius = 16
-    #draw.rounded_rectangle([rectangulo_pos,  (rectangulo_pos[0] + rectangulo_size[0], rectangulo_pos[1] + rectangulo_size[1])], fill="#0a0a0a", radius=border_radius, outline="#282828",width=2)
 
+    # Optional: Draw a rounded rectangle
+    #draw.rounded_rectangle([rectangle_pos, (rectangle_pos[0] + rectangle_size[0], rectangle_pos[1] + rectangle_size[1])], fill="#0a0a0a", radius=border_radius, outline="#282828", width=2)
 
+    # Load the image and resize if necessary
+    image_path = "l.png"  # Adjust the path to your image
+    image = Image.open(image_path)
+    image = image.resize((80, 80))  # Adjust the size as needed
 
-    # Cargar la imagen y ajustar su tamaño si es necesario
-    imagen_path = "l.png"  # Ajusta la ruta a tu imagen
-    imagen = Image.open(imagen_path)
-    imagen = imagen.resize((80, 80))  # Ajusta el tamaño según sea necesario
+    # Create a mask to make the image circular
+    mask = Image.new("L", image.size, 0)
+    draw_mask = ImageDraw.Draw(mask)
+    draw_mask.ellipse((0, 0, image.width, image.height), fill=255)
 
-    # Crear una máscara para hacer la imagen circular
-    mascara = Image.new("L", imagen.size, 0)
-    draw_mascara = ImageDraw.Draw(mascara)
-    draw_mascara.ellipse((0, 0, imagen.width, imagen.height), fill=255)
+    # Paste the image onto the mask
+    image = Image.composite(image, Image.new("RGB", image.size, 0), mask)
 
-    # Pegar la imagen en la máscara
-    imagen = Image.composite(imagen, Image.new("RGB", imagen.size, 0), mascara)
+    # Paste the image to the left of the name within the rectangle
+    img.paste(image, (rectangle_pos[0] + 30, rectangle_pos[1] + 30), mask)
 
-    # Pegar la imagen a la izquierda del nombre dentro del rectángulo
-    img.paste(imagen, (rectangulo_pos[0] + 30, rectangulo_pos[1] + 30), mascara)
+    name_pos = (rectangle_pos[0] + 130, rectangle_pos[1] + 40)
+    username_pos = (rectangle_pos[0] + 130, rectangle_pos[1] + 70)
 
-  
+    # Set the position and size of the content rectangle
+    content_rect_pos = (rectangle_pos[0] + 40, rectangle_pos[1] + 140)
 
-    nombre_pos = (rectangulo_pos[0] + 130, rectangulo_pos[1] + 40)
-    usuario_pos = (rectangulo_pos[0] + 130, rectangulo_pos[1] + 70)
-    
-    # Establecer la posición y tamaño del rectángulo del contenido
-    contenido_rect_pos = (rectangulo_pos[0] + 40, rectangulo_pos[1] + 140)
+    # Draw name and username
+    draw.text(name_pos, name, font=font_name_username, fill='#f0f0f0', stroke_width=1)
+    draw.text(username_pos, f"@{username}", font=font_name_username, fill='#f0f0f0')
 
-    # Dibujar nombre y usuario
-    draw.text(nombre_pos, nombre, font=font_nombre_usuario, fill='#f0f0f0', stroke_width=1)
-    draw.text(usuario_pos, f"@{usuario}", font=font_nombre_usuario, fill='#f0f0f0')
+    # Create an ImageDraw object for the tweet content
+    draw_content = ImageDraw.Draw(img)
 
-    # Crear un objeto ImageDraw para el contenido del tweet
-    draw_contenido = ImageDraw.Draw(img)
+    # Draw the tweet content with wrap and custom line height
+    multiline_text_with_custom_line_height(draw_content, content_rect_pos, content, font=font_content, fill='#fff', line_height=40)
 
-    # Aplicar wrap al contenido del tweet
-    contenido_wrapped = textwrap.fill(contenido, width=55)  # Ajusta el ancho según sea necesario
+    # Save the image as a PNG file
+    img.save(file_name, format='PNG')
 
-    # Dibujar el contenido del tweet con wrap y line_height personalizado
-    multiline_text_with_custom_line_height(draw_contenido, contenido_rect_pos, contenido_tweet, font=font_contenido, fill='#fff', line_height=40)
+# Example usage
+tweet_name = "John Doe"
+tweet_username = "johndoe123"
+tweet_content = "Hey students! 📚 Twitter rocks for marketing! 🚀\nIt's where brands create buzz. 🐝\nConnects with customers & spreads word fast. 💬📢\nPerfect for promos & updates. 🔥\n#MarketingMagic #BrandBuzz #TwitterPower ✨"
 
-
-
-    
-    # Guardar la imagen como un archivo PNG
-    img.save(nombre_archivo, format='PNG')
-
-# Ejemplo de uso
-nombre_tweet = "John Doe"
-usuario_tweet = "johndoe123"
-contenido_tweet = "Hey students! 📚 Twitter rocks for marketing! 🚀\nIt's where brands create buzz. 🐝\nConnects with customers & spreads word fast. 💬📢\nPerfect for promos & updates. 🔥\n#MarketingMagic #BrandBuzz #TwitterPower ✨"
-
-crear_tweet(nombre_tweet, usuario_tweet, contenido_tweet, "tweet.png")
+create_tweet(tweet_name, tweet_username, tweet_content, "tweet.png")
